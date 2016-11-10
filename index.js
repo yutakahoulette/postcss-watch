@@ -1,12 +1,11 @@
-const R = require("ramda")
-const flyd = require("flyd")
-const fs = require('fs')
-const postcss = require('postcss')
+var R = require("ramda")
+var flyd = require("flyd")
+var fs = require('fs')
+var postcss = require('postcss')
 
-
-const createDirs = path => {
+var createDirs = path => {
   // Every directory level in an array (eg ['css', 'css/nonprofits', 'css/nonprofits/recurring_donations']
-  const everyDir = R.compose(
+  var everyDir = R.compose(
     R.dropLast(1) // we don't want the path with the filename at the end (last element in the scan)
   , R.drop(1) // we don't want the first empty array from the scan
   , R.map(R.join('/'))
@@ -18,7 +17,7 @@ const createDirs = path => {
   })
 }
 
-const compile = (input, output, postcssObj, log) => css =>
+var compile = (input, output, postcssObj, log) => css =>
   postcssObj
     .process(css, { from: input, to: output })
     .then(result => {
@@ -28,21 +27,21 @@ const compile = (input, output, postcssObj, log) => css =>
     })
     .catch(err => console.log('!!! compile error: ', err.message))
 
-const readFile = (input, change$) => 
+var readFile = (input, change$) => 
   fs.readFile(input, (err, data) => change$(data))
 
-const initialize = options => {
+var initialize = options => {
   if(!options.plugins) throw "Don't forget to pass in some postcss plugins to postcss-watch"
-  let postcssObj = postcss(options.plugins)
-  const change$ = flyd.stream()
+  var postcssObj = postcss(options.plugins)
+  var change$ = flyd.stream()
   createDirs(options.output)
   // readFile(options.input, change$)
   fs.watch(options.input, {}, (eventType, filename) => {
     if(eventType === 'change') readFile(options.input, change$)
   })
-  const log = options.verbose ? console.log : function(){}
+  var log = options.verbose ? console.log : function(){}
   flyd.map(css => log(`\n:o] css change detected!`), change$)
-  const compile$ = flyd.map(compile(options.input, options.output, postcssObj, log), change$)
+  var compile$ = flyd.map(compile(options.input, options.output, postcssObj, log), change$)
   return compile$
 }
 
